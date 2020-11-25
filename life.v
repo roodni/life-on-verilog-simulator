@@ -29,41 +29,41 @@ module cel (
   end
 endmodule
 
-module main;
-  parameter STDIN = 32'h8000_0000;
-  parameter WIDTH = 16;
-  parameter HEIGHT = 16;
-  parameter CELL_NUM = WIDTH*HEIGHT;
-  parameter ESC = 27;
+`define STDIN 32'h8000_0000
+`define WIDTH 16
+`define HEIGHT 16
+`define CELL_NUM (`WIDTH*`HEIGHT)
+`define ESC 27
 
+module main;
   reg clock;
   reg reset;
-  reg [CELL_NUM - 1 : 0] init;
-  wire [CELL_NUM - 1 : 0] states;
+  reg [`CELL_NUM - 1 : 0] init;
+  wire [`CELL_NUM - 1 : 0] states;
 
   genvar i, j;
   generate
-    for (i = 0; i < HEIGHT; i = i + 1) begin: cell_rows
-      for (j = 0; j < WIDTH; j = j + 1) begin: cell_cols
-        localparam t = (i - 1 + HEIGHT) % HEIGHT;
-        localparam b = (i + 1) % HEIGHT;
-        localparam l = (j - 1 + WIDTH) % WIDTH;
-        localparam r = (j + 1) % WIDTH;
+    for (i = 0; i < `HEIGHT; i = i + 1) begin: cell_rows
+      for (j = 0; j < `WIDTH; j = j + 1) begin: cell_cols
+        localparam t = (i - 1 + `HEIGHT) % `HEIGHT;
+        localparam b = (i + 1) % `HEIGHT;
+        localparam l = (j - 1 + `WIDTH) % `WIDTH;
+        localparam r = (j + 1) % `WIDTH;
         cel c(
           .neighbours({
-            states[t*WIDTH + l],
-            states[t*WIDTH + j],
-            states[t*WIDTH + r],
-            states[i*WIDTH + l],
-            states[i*WIDTH + r],
-            states[b*WIDTH + l],
-            states[b*WIDTH + j],
-            states[b*WIDTH + r]
+            states[t*`WIDTH + l],
+            states[t*`WIDTH + j],
+            states[t*`WIDTH + r],
+            states[i*`WIDTH + l],
+            states[i*`WIDTH + r],
+            states[b*`WIDTH + l],
+            states[b*`WIDTH + j],
+            states[b*`WIDTH + r]
           }),
           .reset(reset),
-          .init(init[i*WIDTH + j]),
+          .init(init[i*`WIDTH + j]),
           .clock(clock),
-          .state(states[i*WIDTH + j])
+          .state(states[i*`WIDTH + j])
         );
       end
     end
@@ -77,24 +77,28 @@ module main;
     // 初期化
     clock <= 0;
     reset <= 1;
-    for (idx = 0; idx < CELL_NUM; idx = idx + 1) begin
+    for (idx = 0; idx < `CELL_NUM; idx = idx + 1) begin
       init[idx] <= $random & 1;
     end
     #5 clock <= 1;
     #5 clock <= 0; reset = 0;
+
+    // 画面クリア
+    $write("%c[H", `ESC);
+    $write("%c[2J", `ESC);
+
     forever begin
       // 入力待ち
-      dummy = $fgetc(STDIN);
-      if (dummy == -1) begin
-        $display("aborted");
-        $finish;
-      end
-      // 出力
-      #1
-      $write("%c[H%c[2J", ESC, ESC);
-      for (row = 0; row < HEIGHT; row = row + 1) begin
-        for (col = 0; col < WIDTH; col = col + 1) begin
-          if (states[row*WIDTH + col]) begin
+      // dummy = $fgetc(STDIN);
+      // if (dummy == -1) begin
+      //   $display("aborted");
+      //   $finish;
+      // end
+      #5
+      $write("%c[H", `ESC); // カーソルを戻す
+      for (row = 0; row < `HEIGHT; row = row + 1) begin
+        for (col = 0; col < `WIDTH; col = col + 1) begin
+          if (states[row*`WIDTH + col]) begin
             $write("#");
           end else begin
             $write(".");
@@ -103,8 +107,7 @@ module main;
         $write("\n");
       end
       $fflush;
-      // 更新
-      #4 clock <= 1;
+      clock <= 1;
       #5 clock <= 0;
     end
   end
