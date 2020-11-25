@@ -1,4 +1,4 @@
-module cel (
+module life_cell (
   input tl, tc, tr, cl, cr, bl, bc, br, // 隣接セルの生死
   input reset,  // 初期化時にON
   input init, // 初期化時にセットされる値
@@ -6,9 +6,7 @@ module cel (
   output reg state  // 生死
 );
   wire [3:0] count = tl + tc + tr + cl + cr + bl + bc + br;
-
   reg q;
-
   always @(posedge clock) begin
     if (reset) begin
       q <= init;
@@ -46,7 +44,7 @@ module main;
         localparam is_b = b == 0;
         localparam is_l = l == `WIDTH;
         localparam is_r = r == 0;
-        cel c(
+        life_cell c(
 `ifdef TORUS
           .tl(states[t*`WIDTH + l]),
           .tc(states[t*`WIDTH + j]),
@@ -75,16 +73,47 @@ module main;
     end
   endgenerate
 
-  integer idx, dummy, row, col;
-  initial begin;
-    // $dumpfile("life.vcd");
-    // $dumpvars(1, main);
+  integer a, row, col;
+  reg [80*8 - 1 : 0] filename;
+  reg [80*8 - 1 : 0] fileerror;
+  reg [7:0] c;
+  integer fd;
 
+  initial begin;
     // 初期化
     clock <= 0;
     reset <= 1;
-    for (idx = 0; idx < `CELL_NUM; idx = idx + 1) begin
-      init[idx] <= $random & 1;
+    if ($value$plusargs("i=%s", filename)) begin
+      // 引数に指定があればファイルから読む
+      fd = $fopen(filename, "r");
+      if ($ferror(fd, fileerror)) begin
+        $display("%0s: %0s", fileerror, filename);
+        $finish;
+      end
+      init = {`CELL_NUM{1'b0}};
+      row = 0;
+      col = 0;
+      c = $fgetc(fd);
+      while (c != 255) begin
+        if (c == "#") begin
+          init[row*`WIDTH + col] = 1'b1;
+          col = col + 1;
+        end else if (c == ".") begin
+          col = col + 1;
+        end else if (c == "\n") begin
+          row = row + 1;
+          col = 0;
+        end else begin
+          $display("invalid character: %d, %0d, %0d", c, row, col);
+          $finish;
+        end
+        c = $fgetc(fd);
+      end
+    end else begin
+      // 指定がなければランダム
+      for (a = 0; a < `CELL_NUM; a = a + 1) begin
+        init[a] = $random & 1;
+      end
     end
     #5 clock <= 1;
     #5 clock <= 0; reset = 0;
@@ -109,6 +138,7 @@ module main;
       end
       $fflush;
       clock <= 1;
+
       #5 clock <= 0;
     end
   end
