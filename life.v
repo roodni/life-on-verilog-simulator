@@ -30,8 +30,8 @@ module cel (
 endmodule
 
 `define STDIN 32'h8000_0000
-`define WIDTH 16
-`define HEIGHT 16
+`define WIDTH 20
+`define HEIGHT 20
 `define CELL_NUM (`WIDTH*`HEIGHT)
 `define ESC 27
 
@@ -88,22 +88,18 @@ module main;
     $write("%c[2J", `ESC);
 
     forever begin
-      // 入力待ち
-      // dummy = $fgetc(STDIN);
-      // if (dummy == -1) begin
-      //   $display("aborted");
-      //   $finish;
-      // end
       #5
       $write("%c[H", `ESC); // カーソルを戻す
       for (row = 0; row < `HEIGHT; row = row + 1) begin
         for (col = 0; col < `WIDTH; col = col + 1) begin
           if (states[row*`WIDTH + col]) begin
-            $write("#");
+            $write("%c[46m", `ESC);
           end else begin
-            $write(".");
+            $write("%c[40m", `ESC);
           end
+          $write("  ");
         end
+        $write("%c[49m", `ESC);
         $write("\n");
       end
       $fflush;
