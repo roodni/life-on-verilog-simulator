@@ -20,8 +20,8 @@ module life_cell (
 endmodule
 
 `define STDIN 32'h8000_0000
-`define WIDTH 20
-`define HEIGHT 20
+`define WIDTH 17
+`define HEIGHT 17
 `define CELL_NUM (`WIDTH*`HEIGHT)
 `define ESC 27
 // `define TORUS
@@ -40,9 +40,9 @@ module main;
         localparam b = (i + 1) % `HEIGHT;
         localparam l = (j - 1 + `WIDTH) % `WIDTH;
         localparam r = (j + 1) % `WIDTH;
-        localparam is_t = t == `HEIGHT;
+        localparam is_t = t == `HEIGHT - 1;
         localparam is_b = b == 0;
-        localparam is_l = l == `WIDTH;
+        localparam is_l = l == `WIDTH - 1;
         localparam is_r = r == 0;
         life_cell c(
 `ifdef TORUS
@@ -137,6 +137,7 @@ module main;
         $write("\n");
       end
       $fflush;
+      // a = $fgetc(`STDIN);
       clock <= 1;
 
       #5 clock <= 0;
