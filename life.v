@@ -24,7 +24,7 @@ endmodule
 `define HEIGHT 17
 `define CELL_NUM (`WIDTH*`HEIGHT)
 `define ESC 27
-// `define TORUS
+`define TORUS
 
 module main;
   reg clock;
@@ -128,7 +128,7 @@ module main;
       for (row = 0; row < `HEIGHT; row = row + 1) begin
         for (col = 0; col < `WIDTH; col = col + 1) begin
           if (states[row*`WIDTH + col]) begin
-            $write("%c[46m", `ESC);
+            $write("%c[44m", `ESC);
           end else begin
             $write("%c[40m", `ESC);
           end
