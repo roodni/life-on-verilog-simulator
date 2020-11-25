@@ -1,3 +1,16 @@
+`define STDIN 32'h8000_0000
+`define ESC 27
+
+`define TORUS
+`define WIDTH 17
+`define HEIGHT 17
+
+// Glider Gun
+// `define WIDTH 36
+// `define HEIGHT 14
+
+`define CELL_NUM (`WIDTH*`HEIGHT)
+
 module life_cell (
   input tl, tc, tr, cl, cr, bl, bc, br, // 隣接セルの生死
   input reset,  // 初期化時にON
@@ -18,13 +31,6 @@ module life_cell (
     state <= q;
   end
 endmodule
-
-`define STDIN 32'h8000_0000
-`define WIDTH 17
-`define HEIGHT 17
-`define CELL_NUM (`WIDTH*`HEIGHT)
-`define ESC 27
-`define TORUS
 
 module main;
   reg clock;
@@ -128,7 +134,7 @@ module main;
       for (row = 0; row < `HEIGHT; row = row + 1) begin
         for (col = 0; col < `WIDTH; col = col + 1) begin
           if (states[row*`WIDTH + col]) begin
-            $write("%c[44m", `ESC);
+            $write("%c[46m", `ESC);
           end else begin
             $write("%c[40m", `ESC);
           end
