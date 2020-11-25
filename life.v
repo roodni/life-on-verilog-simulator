@@ -1,19 +1,11 @@
 module cel (
-  input [7:0] neighbours, // 隣接セルの生死
+  input tl, tc, tr, cl, cr, bl, bc, br, // 隣接セルの生死
   input reset,  // 初期化時にON
   input init, // 初期化時にセットされる値
   input clock,
   output reg state  // 生死
 );
-  wire [3:0] count =
-    neighbours[0] +
-    neighbours[1] +
-    neighbours[2] +
-    neighbours[3] +
-    neighbours[4] +
-    neighbours[5] +
-    neighbours[6] +
-    neighbours[7];
+  wire [3:0] count = tl + tc + tr + cl + cr + bl + bc + br;
 
   reg q;
 
@@ -30,8 +22,8 @@ module cel (
 endmodule
 
 `define STDIN 32'h8000_0000
-`define WIDTH 20
-`define HEIGHT 20
+`define WIDTH 17
+`define HEIGHT 17
 `define CELL_NUM (`WIDTH*`HEIGHT)
 `define ESC 27
 
@@ -50,16 +42,14 @@ module main;
         localparam l = (j - 1 + `WIDTH) % `WIDTH;
         localparam r = (j + 1) % `WIDTH;
         cel c(
-          .neighbours({
-            states[t*`WIDTH + l],
-            states[t*`WIDTH + j],
-            states[t*`WIDTH + r],
-            states[i*`WIDTH + l],
-            states[i*`WIDTH + r],
-            states[b*`WIDTH + l],
-            states[b*`WIDTH + j],
-            states[b*`WIDTH + r]
-          }),
+          .tl(states[t*`WIDTH + l]),
+          .tc(states[t*`WIDTH + j]),
+          .tr(states[t*`WIDTH + r]),
+          .cl(states[i*`WIDTH + l]),
+          .cr(states[i*`WIDTH + r]),
+          .bl(states[b*`WIDTH + l]),
+          .bc(states[b*`WIDTH + j]),
+          .br(states[b*`WIDTH + r]),
           .reset(reset),
           .init(init[i*`WIDTH + j]),
           .clock(clock),
