@@ -22,10 +22,11 @@ module cel (
 endmodule
 
 `define STDIN 32'h8000_0000
-`define WIDTH 17
-`define HEIGHT 17
+`define WIDTH 20
+`define HEIGHT 20
 `define CELL_NUM (`WIDTH*`HEIGHT)
 `define ESC 27
+// `define TORUS
 
 module main;
   reg clock;
@@ -41,7 +42,12 @@ module main;
         localparam b = (i + 1) % `HEIGHT;
         localparam l = (j - 1 + `WIDTH) % `WIDTH;
         localparam r = (j + 1) % `WIDTH;
+        localparam is_t = t == `HEIGHT;
+        localparam is_b = b == 0;
+        localparam is_l = l == `WIDTH;
+        localparam is_r = r == 0;
         cel c(
+`ifdef TORUS
           .tl(states[t*`WIDTH + l]),
           .tc(states[t*`WIDTH + j]),
           .tr(states[t*`WIDTH + r]),
@@ -50,6 +56,16 @@ module main;
           .bl(states[b*`WIDTH + l]),
           .bc(states[b*`WIDTH + j]),
           .br(states[b*`WIDTH + r]),
+`else
+          .tl((is_t || is_l) ? 1'b0 : states[t*`WIDTH + l]),
+          .tc((is_t        ) ? 1'b0 : states[t*`WIDTH + j]),
+          .tr((is_t || is_r) ? 1'b0 : states[t*`WIDTH + r]),
+          .cl((        is_l) ? 1'b0 : states[i*`WIDTH + l]),
+          .cr((        is_r) ? 1'b0 : states[i*`WIDTH + r]),
+          .bl((is_b || is_l) ? 1'b0 : states[b*`WIDTH + l]),
+          .bc((is_b        ) ? 1'b0 : states[b*`WIDTH + j]),
+          .br((is_b || is_r) ? 1'b0 : states[b*`WIDTH + r]),
+`endif
           .reset(reset),
           .init(init[i*`WIDTH + j]),
           .clock(clock),
@@ -74,7 +90,7 @@ module main;
     #5 clock <= 0; reset = 0;
 
     // 画面クリア
-    $write("%c[H", `ESC);
+    $write("%c[49m", `ESC);
     $write("%c[2J", `ESC);
 
     forever begin
@@ -87,9 +103,8 @@ module main;
           end else begin
             $write("%c[40m", `ESC);
           end
-          $write("  ");
+          $write("  %c[49m", `ESC);
         end
-        $write("%c[49m", `ESC);
         $write("\n");
       end
       $fflush;
