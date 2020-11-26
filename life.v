@@ -130,7 +130,7 @@ module main;
 
     forever begin
       #5
-      $write("%c[H", `ESC); // カーソルを戻す
+      // $write("%c[H", `ESC); // カーソルを戻す
       for (row = 0; row < `HEIGHT; row = row + 1) begin
         for (col = 0; col < `WIDTH; col = col + 1) begin
           if (states[row*`WIDTH + col]) begin
@@ -138,9 +138,9 @@ module main;
           end else begin
             $write("%c[40m", `ESC);
           end
-          $write("  %c[49m", `ESC);
+          $write("%c[%0d;%0dH  %c[%0d;0H", `ESC, row + 1, col*2 + 1, `ESC, `HEIGHT + 1);
+          $write("%c[49m", `ESC);
         end
-        $write("\n");
       end
       $fflush;
       // a = $fgetc(`STDIN);
