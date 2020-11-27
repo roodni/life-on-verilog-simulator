@@ -2,7 +2,7 @@
 
 Icarus Verilog **Simulator** で動くライフゲームです。
 
-macOSのTermialで動作することを確認しています。
+macOSのTerminal.appで正しく表示されることを確認しています。
 
 ![demo](demo.png)
 
